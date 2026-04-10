@@ -21,7 +21,7 @@ export default async function handler(req, res) {
       pass: smtpConfig.pass 
     },
     pool: true,
-    maxConnections: 10,
+    maxConnections: 5,
     maxMessages: Infinity,
     ...(agent && { agent }) 
   });
