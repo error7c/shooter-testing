@@ -1,0 +1,8 @@
+{
+  "name": "p7m-ultra-engine",
+  "version": "2.1.0",
+  "dependencies": {
+    "nodemailer": "^6.9.0",
+    "socks-proxy-agent": "^7.0.0"
+  }
+}
