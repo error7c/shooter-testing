@@ -10,18 +10,30 @@
     <style>
         :root { --rb: linear-gradient(45deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8b00ff); }
         body { background-color: #030406; color: #f1f5f9; font-family: 'Plus Jakarta Sans', sans-serif; overflow: hidden; height: 100vh; }
+        
+        /* Galaxy Background Enhancement */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-image: 
+                radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 40px),
+                radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 30px);
+            background-size: 550px 550px, 350px 350px;
+            opacity: 0.1;
+            z-index: -1;
+        }
+
         .premium-border { position: relative; padding: 2px; background: var(--rb); background-size: 300% 300%; animation: rb-move 4s linear infinite; border-radius: 24px; }
         @keyframes rb-move { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
         .glass-card { background: rgba(10, 11, 16, 0.95); backdrop-filter: blur(20px); border-radius: 22px; border: 1px solid rgba(255,255,255,0.03); }
         .input-glow { background: #08090d; border: 1px solid #1e293b; color: #fff; padding: 14px; border-radius: 12px; outline: none; transition: 0.3s; width: 100%; font-size: 13px; }
         .input-glow:focus { border-color: #3b82f6; box-shadow: 0 0 20px rgba(59, 130, 246, 0.2); }
         
-        /* Fixed Scrollable Log Terminal */
         #log-container { height: calc(100vh - 200px); overflow-y: auto; scroll-behavior: smooth; }
         #log-container::-webkit-scrollbar { width: 4px; }
         #log-container::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
-        
-        #docs-overlay { display: none; position: fixed; inset: 0; background: #030406; z-index: 9999; overflow-y: auto; padding: 50px 20px; }
     </style>
 </head>
 <body class="p-6">
@@ -50,8 +62,8 @@
                         <input type="number" id="m-port" placeholder="Port" class="input-glow save-data">
                     </div>
                     <div class="pt-2">
-                        <label class="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Delay (ms)</label>
-                        <input type="number" id="send-delay" value="2000" class="input-glow mt-1 text-blue-400 font-bold save-data">
+                        <label class="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Base Delay (ms)</label>
+                        <input type="number" id="send-delay" value="15000" class="input-glow mt-1 text-blue-400 font-bold save-data">
                     </div>
                 </div>
             </div>
@@ -131,12 +143,9 @@
     <script>
         let smtps = [], targets = [], sent = 0, fail = 0, isRunning = false;
 
-        // --- DATA MEMORY LOGIC ---
         function saveAllData() {
             const data = {};
-            document.querySelectorAll('.save-data').forEach(el => {
-                data[el.id] = el.value;
-            });
+            document.querySelectorAll('.save-data').forEach(el => { data[el.id] = el.value; });
             localStorage.setItem('p7m_ultra_data', JSON.stringify(data));
         }
 
@@ -146,26 +155,19 @@
                 const data = JSON.parse(saved);
                 Object.keys(data).forEach(key => {
                     const el = document.getElementById(key);
-                    if (el) {
-                        el.value = data[key];
-                        // Trigger manual field toggle if needed
-                        if (key === 'smtp-type') toggleManualSmtp();
-                    }
+                    if (el) { el.value = data[key]; if (key === 'smtp-type') toggleManualSmtp(); }
                 });
                 updatePreview();
             }
         }
 
-        // Attach event listeners to all save-data fields
         document.querySelectorAll('.save-data').forEach(el => {
             el.addEventListener('input', saveAllData);
             el.addEventListener('change', saveAllData);
         });
 
-        // Initialize on load
         window.onload = loadAllData;
 
-        // --- ENGINE LOGIC ---
         function toggleManualSmtp() { document.getElementById('manual-fields').classList.toggle('hidden', document.getElementById('smtp-type').value !== 'custom'); }
         
         document.getElementById('f-smtp').onchange = e => Papa.parse(e.target.files[0], { skipEmptyLines: true, complete: r => { 
@@ -182,24 +184,29 @@
             let h = document.getElementById('s-body').value;
             h = h.replace(/drive\.google\.com\/uc\?export=view&id=([\w-]+)/g, 'lh3.googleusercontent.com/d/$1');
             document.getElementById('p-frame').srcdoc = h;
-            saveAllData(); // Ensure body is saved on input
+            saveAllData();
         }
 
         async function launch() {
             if(!smtps.length || !targets.length) return alert("LOAD DATABASES FIRST");
             isRunning = true; toggleUI(true);
-            const delay = parseInt(document.getElementById('send-delay').value) || 2000;
+            const baseDelay = parseInt(document.getElementById('send-delay').value) || 15000;
 
             for(let i=0; i < targets.length; i++) {
                 if(!isRunning) break;
                 const sRow = smtps[i % smtps.length];
                 const type = document.getElementById('smtp-type').value;
 
+                // --- FINGERPRINT SCRAMBLER LOGIC ---
+                const salt = Math.random().toString(36).substring(2, 9);
+                const originalHtml = document.getElementById('s-body').value;
+                const uniqueHtml = originalHtml + `<div style="display:none; color:transparent; font-size:1px;">P7M-ID: ${salt}</div>`;
+
                 const payload = {
                     smtpConfig: { user: sRow[0]?.trim(), pass: sRow[1]?.trim(), host: type === 'custom' ? document.getElementById('m-host').value : getHost(type), port: type === 'custom' ? document.getElementById('m-port').value : getPort(type) },
                     proxyConfig: { host: document.getElementById('px-host').value, port: document.getElementById('px-port').value, user: document.getElementById('px-user').value, pass: document.getElementById('px-pass').value },
                     customHeaders: { userAgent: document.getElementById('ua-string').value },
-                    mailData: { fromName: document.getElementById('s-name').value, to: targets[i][0], subject: document.getElementById('s-sub').value, html: document.getElementById('s-body').value }
+                    mailData: { fromName: document.getElementById('s-name').value, to: targets[i][0], subject: document.getElementById('s-sub').value, html: uniqueHtml }
                 };
 
                 try {
@@ -209,7 +216,10 @@
                 } catch(e) { fail++; addLog(`BLOCK -> ${targets[i][0]}`, "text-red-500", e.message); }
                 
                 updateStats();
-                await new Promise(r => setTimeout(r, delay));
+
+                // Randomize delay ± 10% to look human
+                const randomDelay = baseDelay + (Math.random() * (baseDelay * 0.2) - (baseDelay * 0.1));
+                await new Promise(r => setTimeout(r, randomDelay));
             }
             isRunning = false; toggleUI(false);
         }
@@ -224,10 +234,9 @@
             const log = document.getElementById('log');
             const container = document.getElementById('log-container');
             const div = document.createElement('div');
-            div.className = "pb-2 border-b border-white/5 animate-pulse";
+            div.className = "pb-2 border-b border-white/5";
             div.innerHTML = `<div class="${color}">[${new Date().toLocaleTimeString()}] ${msg}</div>${debug ? `<div class="text-[8px] text-zinc-700 font-mono">${debug}</div>` : ''}`;
             log.prepend(div);
-            // Auto scroll to top of terminal
             container.scrollTop = 0;
         }
     </script>
