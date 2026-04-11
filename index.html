@@ -193,7 +193,7 @@
             saveAllData();
         }
 
-        // --- ENGINE REPAIR (BOSS, Error Tracking Added) ---
+        // --- ENGINE SAFETY REPAIR ---
         async function launch() {
             if(!smtps.length || !targets.length) return alert("LOAD DATABASES BOSS");
             isRunning = true; toggleUI(true);
@@ -228,18 +228,27 @@
                         body: JSON.stringify(payload) 
                     });
                     
-                    const result = await res.json();
-                    
-                    if(res.ok && result.success) { 
-                        sent++; 
-                        addLog(`SUCCESS: ${targetEmail}`, "text-green-400");
-                    } else { 
-                        fail++; 
-                        addLog(`BLOCK: ${targetEmail} | ERR: ${result.error || 'Unknown Server Error'}`, "text-red-500");
+                    // SAFETY CHECK: Verify if response is JSON
+                    const contentType = res.headers.get("content-type");
+                    if (contentType && contentType.indexOf("application/json") !== -1) {
+                        const result = await res.json();
+                        if(res.ok && result.success) { 
+                            sent++; 
+                            addLog(`SUCCESS: ${targetEmail}`, "text-green-400");
+                        } else { 
+                            fail++; 
+                            addLog(`BLOCK: ${targetEmail} | ERR: ${result.error || 'SMTP Refusal'}`, "text-red-500");
+                        }
+                    } else {
+                        // Backend returned HTML or Text instead of JSON
+                        const rawError = await res.text();
+                        fail++;
+                        addLog(`SERVER CRASH: ${targetEmail} | Check API Route`, "text-red-600 font-black");
+                        console.error("Non-JSON Response:", rawError);
                     }
                 } catch (err) { 
                     fail++; 
-                    addLog(`CRITICAL: ${targetEmail} | ${err.message}`, "text-red-600 font-bold");
+                    addLog(`CRITICAL: ${err.message}`, "text-red-600 font-bold");
                 }
                 
                 updateStats();
