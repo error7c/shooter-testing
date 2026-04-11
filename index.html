@@ -130,46 +130,47 @@
 
     <script>
         let smtps = [], targets = [], sent = 0, fail = 0, isRunning = false;
-        const IPQS_KEY = "5J2xtETPiWGyYrPxLsjoeECXmii2BPWE";
-        const ABUSE_KEY = "8ec051f099d16521565e90e8799cace4fa371ac6f54bb1234463c3622ef8384eb20a69218557920a";
 
-        // --- REAL IP INTELLIGENCE ---
+        // --- REAL IP INTELLIGENCE (Boss, this matches your check-proxy.js) ---
         async function checkRealIPReputation() {
             const display = document.getElementById('ip-details');
             const px = {
-                h: document.getElementById('px-host').value,
-                p: document.getElementById('px-port').value,
-                u: document.getElementById('px-user').value,
-                w: document.getElementById('px-pass').value
+                host: document.getElementById('px-host').value,
+                port: document.getElementById('px-port').value,
+                user: document.getElementById('px-user').value,
+                pass: document.getElementById('px-pass').value
             };
 
-            display.innerHTML = '<span class="animate-pulse text-blue-400">ANALYZING REAL-WORLD REPUTATION...</span>';
+            if(!px.host) return alert("BOSS, ENTER PROXY HOST");
+
+            display.innerHTML = '<span class="animate-pulse text-blue-400">TUNNELING THROUGH SOCKS5...</span>';
 
             try {
-                // First, check the IP through your proxy to see what the world sees
                 const res = await fetch('/api/check-proxy', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ host: px.h, port: px.p, user: px.u, pass: px.w, keys: { ipqs: IPQS_KEY, abuse: ABUSE_KEY } })
+                    body: JSON.stringify({ host: px.host, port: px.port, user: px.user, pass: px.pass })
                 });
                 
                 const data = await res.json();
                 
                 if (data.success) {
-                    const isBad = data.fraud_score > 50 || data.abuse_score > 20;
-                    const statusColor = isBad ? 'text-red-500' : 'text-green-500';
+                    const statusColor = data.isBlacklisted ? 'text-red-500' : 'text-green-500 font-bold';
                     
                     display.innerHTML = `
-                        <div class="text-blue-400">IP: ${data.ip}</div>
+                        <div class="text-blue-400 font-bold">IP: ${data.ip}</div>
+                        <div class="text-[9px]">LOC: ${data.city}, ${data.country}</div>
                         <div>ISP: ${data.isp}</div>
-                        <div>GOOGLE REP: <span class="${statusColor}">${isBad ? 'FLAGGED' : 'HIGH REPUTATION'}</span></div>
-                        <div>FRAUD SCORE: ${data.fraud_score}%</div>
-                        <div>BLACKLIST: <span class="${statusColor}">${data.is_blacklisted ? 'LISTED' : 'CLEAN'}</span></div>
+                        <div>GOOGLE REP: <span class="${statusColor}">${data.googleScore}</span></div>
+                        <div>STATUS: <span class="${statusColor}">${data.blacklistStatus}</span></div>
                     `;
-                    addLog(`INTEL GATHERED FOR ${data.ip}`, "text-green-400");
-                } else { throw new Error(data.error); }
+                    addLog(`INTEL GATHERED: ${data.ip} [${data.country}]`, "text-green-400");
+                } else { 
+                    throw new Error(data.error); 
+                }
             } catch (e) {
-                display.innerHTML = `<span class="text-red-500">INTEL ERROR: ${e.message}</span>`;
+                display.innerHTML = `<span class="text-red-500 font-bold">INTEL ERROR:</span><br><span class="text-[9px] text-zinc-400">${e.message}</span>`;
+                addLog(`CONNECTION FAILED: ${e.message}`, "text-red-500");
             }
         }
 
