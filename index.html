@@ -34,12 +34,16 @@
 
             <div class="premium-border">
                 <div class="glass-card p-4 space-y-3">
-                    <div class="flex justify-between items-center">
-                        <p class="text-[10px] font-black text-blue-400 uppercase tracking-widest">Intelligence Hub</p>
-                        <button onclick="checkIP()" class="bg-blue-600 px-3 py-1 rounded text-[9px] font-bold uppercase btn-action">Analyze IP</button>
+                    <p class="text-[10px] font-black text-blue-400 uppercase tracking-widest">Intelligence Hub (Proxy)</p>
+                    <div class="grid grid-cols-2 gap-2">
+                        <input type="text" id="px-host" placeholder="IP/Host" class="input-glow text-[10px] save-data">
+                        <input type="text" id="px-port" placeholder="Port" class="input-glow text-[10px] save-data">
+                        <input type="text" id="px-user" placeholder="User" class="input-glow text-[10px] save-data">
+                        <input type="password" id="px-pass" placeholder="Pass" class="input-glow text-[10px] save-data">
                     </div>
-                    <div id="ip-details" class="bg-black/50 p-3 rounded-lg text-[10px] font-mono space-y-1">
-                        <p class="text-zinc-500">System Ready. Click Analyze.</p>
+                    <button onclick="checkRealIPReputation()" class="w-full bg-blue-600 py-2 rounded text-[10px] font-bold uppercase btn-action">Verify & Check IP</button>
+                    <div id="ip-details" class="bg-black/50 p-3 rounded-lg text-[10px] font-mono space-y-1 min-h-[60px]">
+                        <p class="text-zinc-500">Standby for Analysis...</p>
                     </div>
                 </div>
             </div>
@@ -126,23 +130,47 @@
 
     <script>
         let smtps = [], targets = [], sent = 0, fail = 0, isRunning = false;
+        const IPQS_KEY = "5J2xtETPiWGyYrPxLsjoeECXmii2BPWE";
+        const ABUSE_KEY = "8ec051f099d16521565e90e8799cace4fa371ac6f54bb1234463c3622ef8384eb20a69218557920a";
 
-        // --- IP INTELLIGENCE ---
-        async function checkIP() {
+        // --- REAL IP INTELLIGENCE ---
+        async function checkRealIPReputation() {
             const display = document.getElementById('ip-details');
-            display.innerHTML = '<span class="animate-pulse text-blue-400">GATHERING INTEL...</span>';
+            const px = {
+                h: document.getElementById('px-host').value,
+                p: document.getElementById('px-port').value,
+                u: document.getElementById('px-user').value,
+                w: document.getElementById('px-pass').value
+            };
+
+            display.innerHTML = '<span class="animate-pulse text-blue-400">ANALYZING REAL-WORLD REPUTATION...</span>';
+
             try {
-                const res = await fetch('https://ipapi.co/json/');
-                const d = await res.json();
-                const blacklist = Math.random() > 0.8 ? '<span class="text-red-500">FLAGGED</span>' : '<span class="text-green-500">CLEAN</span>';
-                display.innerHTML = `
-                    IP: ${d.ip}<br>
-                    ORG: ${d.org}<br>
-                    LOC: ${d.city}, ${d.country_name}<br>
-                    GOOGLE REPUTATION: ${blacklist}<br>
-                    SPAMHAUS: <span class="text-green-500">PASS</span>
-                `;
-            } catch (e) { display.innerText = "Connection Error."; }
+                // First, check the IP through your proxy to see what the world sees
+                const res = await fetch('/api/check-proxy', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ host: px.h, port: px.p, user: px.u, pass: px.w, keys: { ipqs: IPQS_KEY, abuse: ABUSE_KEY } })
+                });
+                
+                const data = await res.json();
+                
+                if (data.success) {
+                    const isBad = data.fraud_score > 50 || data.abuse_score > 20;
+                    const statusColor = isBad ? 'text-red-500' : 'text-green-500';
+                    
+                    display.innerHTML = `
+                        <div class="text-blue-400">IP: ${data.ip}</div>
+                        <div>ISP: ${data.isp}</div>
+                        <div>GOOGLE REP: <span class="${statusColor}">${isBad ? 'FLAGGED' : 'HIGH REPUTATION'}</span></div>
+                        <div>FRAUD SCORE: ${data.fraud_score}%</div>
+                        <div>BLACKLIST: <span class="${statusColor}">${data.is_blacklisted ? 'LISTED' : 'CLEAN'}</span></div>
+                    `;
+                    addLog(`INTEL GATHERED FOR ${data.ip}`, "text-green-400");
+                } else { throw new Error(data.error); }
+            } catch (e) {
+                display.innerHTML = `<span class="text-red-500">INTEL ERROR: ${e.message}</span>`;
+            }
         }
 
         // --- DATA MANAGEMENT ---
@@ -157,9 +185,15 @@
 
         function handleCSV(e, type) {
             Papa.parse(e.target.files[0], { skipEmptyLines: true, complete: r => {
-                if(type === 'smtp') { smtps = [...smtps, ...r.data]; document.getElementById('count-smtp').innerText = smtps.length; }
-                else { targets = [...targets, ...r.data]; document.getElementById('count-target').innerText = targets.length; }
-                addLog(`STACKED: ${r.data.length} NEW RECORDS ADDED`, "text-blue-400");
+                const newData = r.data.filter(row => row.length > 0);
+                if(type === 'smtp') { 
+                    smtps = [...smtps, ...newData]; 
+                    document.getElementById('count-smtp').innerText = smtps.length; 
+                } else { 
+                    targets = [...targets, ...newData]; 
+                    document.getElementById('count-target').innerText = targets.length; 
+                }
+                addLog(`STACKED: ${newData.length} NEW RECORDS ADDED`, "text-blue-400");
             }});
         }
 
@@ -178,7 +212,7 @@
                 html = html.replace('{{LINK_BUTTON}}', btnHtml) || (html + btnHtml);
             }
 
-            document.getElementById('p-frame').srcdoc = `<div style="font-family:sans-serif">${plain ? `<p>${plain}</p><hr>` : ''}${html}</div>`;
+            document.getElementById('p-frame').srcdoc = `<div style="font-family:sans-serif">${plain ? `<p style="white-space:pre-line">${plain}</p><hr>` : ''}${html}</div>`;
             saveAllData();
         }
 
@@ -189,10 +223,10 @@
             
             for(let i=0; i < targets.length; i++) {
                 if(!isRunning) break;
-                const salt = Math.random().toString(36).substring(7);
                 const payload = {
                     smtpConfig: { user: smtps[i % smtps.length][0], pass: smtps[i % smtps.length][1], host: 'smtp.gmail.com', port: 465 },
-                    mailData: { to: targets[i][0], subject: document.getElementById('s-sub').value, html: document.getElementById('p-frame').srcdoc + `` }
+                    mailData: { to: targets[i][0], subject: document.getElementById('s-sub').value, html: document.getElementById('p-frame').srcdoc },
+                    proxy: { host: document.getElementById('px-host').value, port: document.getElementById('px-port').value, user: document.getElementById('px-user').value, pass: document.getElementById('px-pass').value }
                 };
 
                 try {
