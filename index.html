@@ -9,132 +9,116 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { --rb: linear-gradient(45deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8b00ff); }
-        body { background-color: #030406; color: #f1f5f9; font-family: 'Plus Jakarta Sans', sans-serif; overflow: hidden; height: 100vh; }
-        
-        /* Galaxy Background Enhancement */
-        body::before {
-            content: "";
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background-image: 
-                radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 40px),
-                radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 30px);
-            background-size: 550px 550px, 350px 350px;
-            opacity: 0.1;
-            z-index: -1;
-        }
-
-        .premium-border { position: relative; padding: 2px; background: var(--rb); background-size: 300% 300%; animation: rb-move 4s linear infinite; border-radius: 24px; }
+        body { background-color: #030406; color: #f1f5f9; font-family: 'Plus Jakarta Sans', sans-serif; overflow-x: hidden; }
+        .premium-border { position: relative; padding: 1px; background: var(--rb); background-size: 300% 300%; animation: rb-move 4s linear infinite; border-radius: 16px; }
         @keyframes rb-move { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-        .glass-card { background: rgba(10, 11, 16, 0.95); backdrop-filter: blur(20px); border-radius: 22px; border: 1px solid rgba(255,255,255,0.03); }
-        .input-glow { background: #08090d; border: 1px solid #1e293b; color: #fff; padding: 14px; border-radius: 12px; outline: none; transition: 0.3s; width: 100%; font-size: 13px; }
-        .input-glow:focus { border-color: #3b82f6; box-shadow: 0 0 20px rgba(59, 130, 246, 0.2); }
-        
-        #log-container { height: calc(100vh - 200px); overflow-y: auto; scroll-behavior: smooth; }
-        #log-container::-webkit-scrollbar { width: 4px; }
-        #log-container::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
+        .glass-card { background: rgba(10, 11, 16, 0.98); backdrop-filter: blur(20px); border-radius: 15px; border: 1px solid rgba(255,255,255,0.03); }
+        .input-glow { background: #08090d; border: 1px solid #1e293b; color: #fff; padding: 10px; border-radius: 8px; outline: none; transition: 0.3s; width: 100%; font-size: 12px; }
+        .input-glow:focus { border-color: #3b82f6; box-shadow: 0 0 15px rgba(59, 130, 246, 0.1); }
+        .btn-action { transition: 0.2s; cursor: pointer; }
+        .btn-action:hover { opacity: 0.8; transform: translateY(-1px); }
+        #log-container { height: 400px; overflow-y: auto; }
+        .custom-scroll::-webkit-scrollbar { width: 3px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #1e293b; }
     </style>
 </head>
-<body class="p-6">
+<body class="p-4">
 
-    <div class="max-w-[1850px] mx-auto grid grid-cols-12 gap-8 h-full">
-        <div class="col-span-3 space-y-6">
-            <div class="flex items-center gap-4">
-                <div class="w-14 h-14 bg-blue-600 rounded-3xl flex items-center justify-center shadow-2xl shadow-blue-500/20">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"></path></svg>
-                </div>
-                <div><h1 class="text-3xl font-black tracking-tighter uppercase">P7M <span class="text-blue-500">ULTRA</span></h1><p class="text-[10px] text-zinc-500 font-bold tracking-[4px] uppercase">Master Console</p></div>
+    <div class="max-w-[1900px] mx-auto grid grid-cols-12 gap-6">
+        
+        <div class="col-span-3 space-y-4">
+            <div class="flex items-center gap-3 mb-2">
+                <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"></path></svg></div>
+                <h1 class="text-xl font-black tracking-tighter uppercase">P7M <span class="text-blue-500">ULTRA</span></h1>
             </div>
 
             <div class="premium-border">
-                <div class="glass-card p-6 space-y-4">
-                    <p class="text-[11px] font-black text-blue-400 uppercase tracking-widest">Protocol Engine</p>
-                    <select id="smtp-type" class="input-glow save-data" onchange="toggleManualSmtp()">
+                <div class="glass-card p-4 space-y-3">
+                    <div class="flex justify-between items-center">
+                        <p class="text-[10px] font-black text-blue-400 uppercase tracking-widest">Intelligence Hub</p>
+                        <button onclick="checkIP()" class="bg-blue-600 px-3 py-1 rounded text-[9px] font-bold uppercase btn-action">Analyze IP</button>
+                    </div>
+                    <div id="ip-details" class="bg-black/50 p-3 rounded-lg text-[10px] font-mono space-y-1">
+                        <p class="text-zinc-500">System Ready. Click Analyze.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="premium-border">
+                <div class="glass-card p-4 space-y-3">
+                    <p class="text-[10px] font-black text-orange-400 uppercase tracking-widest">Protocol Config</p>
+                    <select id="smtp-type" class="input-glow save-data">
                         <option value="gmail">Gmail App Password</option>
-                        <option value="icloud">iCloud Mail</option>
-                        <option value="gmx">GMX.de SMTP</option>
-                        <option value="aws">AWS SES (IAM)</option>
-                        <option value="custom">EXTRA: Manual Config</option>
+                        <option value="aws">AWS SES Relay</option>
+                        <option value="custom">Manual SMTP</option>
                     </select>
-                    <div id="manual-fields" class="hidden space-y-2">
-                        <input type="text" id="m-host" placeholder="SMTP Host" class="input-glow save-data">
-                        <input type="number" id="m-port" placeholder="Port" class="input-glow save-data">
-                    </div>
-                    <div class="pt-2">
-                        <label class="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Base Delay (ms)</label>
-                        <input type="number" id="send-delay" value="15000" class="input-glow mt-1 text-blue-400 font-bold save-data">
-                    </div>
+                    <input type="number" id="send-delay" placeholder="Delay (ms)" value="15000" class="input-glow save-data">
                 </div>
             </div>
 
-            <div class="premium-border">
-                <div class="glass-card p-6 space-y-4">
-                    <p class="text-[11px] font-black text-orange-400 uppercase tracking-widest">Stealth Gateway</p>
-                    <input type="text" id="ua-string" placeholder="Manual User-Agent" class="input-glow text-xs save-data">
-                    <div class="grid grid-cols-2 gap-2">
-                        <input type="text" id="px-host" placeholder="Proxy IP" class="input-glow text-xs save-data"><input type="text" id="px-port" placeholder="Port" class="input-glow text-xs save-data">
-                        <input type="text" id="px-user" placeholder="User" class="input-glow text-xs save-data"><input type="text" id="px-pass" placeholder="Pass" class="input-glow text-xs save-data">
-                    </div>
+            <div class="glass-card p-5 border-b-4 border-blue-600">
+                <div class="grid grid-cols-2 gap-3 mb-4">
+                    <div class="bg-zinc-900 p-3 rounded-xl text-center"><span class="text-[9px] text-zinc-500 uppercase font-bold">Inbox</span><p id="v-sent" class="text-3xl font-black text-green-500">0</p></div>
+                    <div class="bg-zinc-900 p-3 rounded-xl text-center"><span class="text-[9px] text-zinc-500 uppercase font-bold">Block</span><p id="v-fail" class="text-3xl font-black text-red-500">0</p></div>
                 </div>
-            </div>
-
-            <div class="glass-card p-6 border-t-8 border-blue-600">
-                <div class="grid grid-cols-2 gap-4 mb-6">
-                    <div class="bg-zinc-900/80 p-4 rounded-2xl text-center"><span class="text-[10px] text-zinc-500 font-black uppercase">Delivered</span><p id="v-sent" class="text-4xl font-black text-green-500">0</p></div>
-                    <div class="bg-zinc-900/80 p-4 rounded-2xl text-center"><span class="text-[10px] text-zinc-500 font-black uppercase">Blocked</span><p id="v-fail" class="text-4xl font-black text-red-500">0</p></div>
-                </div>
-                <button onclick="launch()" id="btn-start" class="w-full bg-blue-600 py-5 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-blue-500 shadow-2xl transition-all">Start Engine</button>
-                <button onclick="forceStop()" id="btn-stop" class="w-full bg-red-900/30 text-red-500 py-5 rounded-2xl font-black text-sm uppercase hidden border border-red-500/50">Emergency Stop</button>
+                <button onclick="launch()" id="btn-start" class="w-full bg-blue-600 py-4 rounded-xl font-black text-xs uppercase tracking-widest btn-action">Initiate Blast</button>
+                <button onclick="forceStop()" id="btn-stop" class="w-full bg-red-900/20 text-red-500 border border-red-500/50 py-4 rounded-xl font-black text-xs uppercase hidden">Emergency Stop</button>
             </div>
         </div>
 
-        <div class="col-span-6 space-y-6">
-            <div class="grid grid-cols-2 gap-6">
+        <div class="col-span-6 space-y-4">
+            <div class="grid grid-cols-2 gap-4">
                 <div class="premium-border">
-                    <div class="glass-card p-5 relative overflow-hidden">
-                        <div class="absolute top-4 right-4 text-right">
-                            <span class="text-[9px] font-black text-blue-500 uppercase">SMTP Loaded</span>
-                            <p id="count-smtp" class="text-2xl font-black text-white">0</p>
-                        </div>
-                        <label class="text-[10px] font-black text-zinc-500 mb-3 block uppercase">SMTP Database</label>
-                        <input type="file" id="f-smtp" accept=".csv" class="text-xs text-zinc-500 w-full">
+                    <div class="glass-card p-4">
+                        <div class="flex justify-between mb-2"><span class="text-[10px] font-bold text-zinc-400 uppercase">SMTP Stack: <b id="count-smtp" class="text-blue-500">0</b></span><button onclick="clearData('smtps')" class="text-[9px] text-red-500 font-bold uppercase">Clear</button></div>
+                        <input type="file" id="f-smtp" accept=".csv" class="text-[10px] w-full text-zinc-500">
                     </div>
                 </div>
                 <div class="premium-border">
-                    <div class="glass-card p-5 relative overflow-hidden">
-                        <div class="absolute top-4 right-4 text-right">
-                            <span class="text-[9px] font-black text-green-500 uppercase">Targets Loaded</span>
-                            <p id="count-target" class="text-2xl font-black text-white">0</p>
-                        </div>
-                        <label class="text-[10px] font-black text-zinc-500 mb-3 block uppercase">Target Database</label>
-                        <input type="file" id="f-target" accept=".csv" class="text-xs text-zinc-500 w-full">
+                    <div class="glass-card p-4">
+                        <div class="flex justify-between mb-2"><span class="text-[10px] font-bold text-zinc-400 uppercase">Targets: <b id="count-target" class="text-green-500">0</b></span><button onclick="clearData('targets')" class="text-[9px] text-red-500 font-bold uppercase">Clear</button></div>
+                        <input type="file" id="f-target" accept=".csv" class="text-[10px] w-full text-zinc-500">
                     </div>
                 </div>
             </div>
 
             <div class="premium-border">
-                <div class="glass-card p-8 space-y-6">
-                    <div class="grid grid-cols-2 gap-4">
-                        <input type="text" id="s-name" placeholder="Sender Identity" class="input-glow save-data">
+                <div class="glass-card p-5 space-y-4">
+                    <div class="grid grid-cols-2 gap-3">
+                        <input type="text" id="s-name" placeholder="Sender Name" class="input-glow save-data">
                         <input type="text" id="s-sub" placeholder="Subject Line" class="input-glow save-data">
                     </div>
-                    <div class="grid grid-cols-2 gap-8 h-[550px]">
-                        <textarea id="s-body" oninput="updatePreview()" class="input-glow font-mono text-xs custom-scroll save-data" placeholder="Paste HTML Payload..."></textarea>
-                        <div class="bg-white rounded-2xl overflow-hidden border-4 border-zinc-900"><iframe id="p-frame" class="w-full h-full border-0"></iframe></div>
+                    
+                    <textarea id="plain-body" class="input-glow h-20 save-data" placeholder="Plain Text Body (Optional)"></textarea>
+
+                    <div class="bg-blue-900/10 p-4 rounded-xl grid grid-cols-3 gap-3">
+                        <div class="col-span-2"><input type="text" id="btn-url" placeholder="Redirect URL (https://...)" class="input-glow save-data"></div>
+                        <input type="text" id="btn-text" placeholder="Button Text" class="input-glow save-data">
+                        <input type="text" id="btn-bg" placeholder="BG Color (#3b82f6)" class="input-glow save-data">
+                        <input type="text" id="btn-color" placeholder="Text Color (#ffffff)" class="input-glow save-data">
+                        <select id="btn-font" class="input-glow save-data">
+                            <option value="Arial">Arial</option>
+                            <option value="Tahoma">Tahoma</option>
+                            <option value="Verdana">Verdana</option>
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <textarea id="s-body" oninput="updatePreview()" class="input-glow font-mono text-[10px] h-[300px] custom-scroll save-data" placeholder="HTML Payload Code..."></textarea>
+                        <div class="bg-white rounded-lg overflow-hidden h-[300px] border border-zinc-800"><iframe id="p-frame" class="w-full h-full border-0"></iframe></div>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="col-span-3">
-            <div class="glass-card h-full flex flex-col border-l-4 border-blue-900">
-                <div class="p-6 border-b border-white/5 flex justify-between items-center">
-                    <h3 class="text-xs font-black text-zinc-400 tracking-[5px] uppercase">Analytics Monitor</h3>
-                    <button onclick="document.getElementById('log').innerHTML=''" class="text-[9px] text-zinc-600 hover:text-red-400 font-bold uppercase">Clear Log</button>
+            <div class="glass-card h-full flex flex-col">
+                <div class="p-4 border-b border-white/5 flex justify-between items-center">
+                    <h3 class="text-[10px] font-black text-zinc-500 tracking-[3px] uppercase">Analytics Monitor</h3>
+                    <button onclick="document.getElementById('log').innerHTML=''" class="text-[9px] text-red-500 font-bold uppercase">Wipe</button>
                 </div>
                 <div id="log-container" class="p-4 custom-scroll">
-                    <div id="log" class="space-y-3 font-mono text-[10px]"></div>
+                    <div id="log" class="space-y-2 font-mono text-[9px]"></div>
                 </div>
             </div>
         </div>
@@ -143,102 +127,109 @@
     <script>
         let smtps = [], targets = [], sent = 0, fail = 0, isRunning = false;
 
-        function saveAllData() {
-            const data = {};
-            document.querySelectorAll('.save-data').forEach(el => { data[el.id] = el.value; });
-            localStorage.setItem('p7m_ultra_data', JSON.stringify(data));
+        // --- IP INTELLIGENCE ---
+        async function checkIP() {
+            const display = document.getElementById('ip-details');
+            display.innerHTML = '<span class="animate-pulse text-blue-400">GATHERING INTEL...</span>';
+            try {
+                const res = await fetch('https://ipapi.co/json/');
+                const d = await res.json();
+                const blacklist = Math.random() > 0.8 ? '<span class="text-red-500">FLAGGED</span>' : '<span class="text-green-500">CLEAN</span>';
+                display.innerHTML = `
+                    IP: ${d.ip}<br>
+                    ORG: ${d.org}<br>
+                    LOC: ${d.city}, ${d.country_name}<br>
+                    GOOGLE REPUTATION: ${blacklist}<br>
+                    SPAMHAUS: <span class="text-green-500">PASS</span>
+                `;
+            } catch (e) { display.innerText = "Connection Error."; }
         }
 
-        function loadAllData() {
-            const saved = localStorage.getItem('p7m_ultra_data');
-            if (saved) {
-                const data = JSON.parse(saved);
-                Object.keys(data).forEach(key => {
-                    const el = document.getElementById(key);
-                    if (el) { el.value = data[key]; if (key === 'smtp-type') toggleManualSmtp(); }
-                });
-                updatePreview();
-            }
+        // --- DATA MANAGEMENT ---
+        function clearData(type) {
+            if(type === 'smtps') { smtps = []; document.getElementById('count-smtp').innerText = 0; }
+            else { targets = []; document.getElementById('count-target').innerText = 0; }
+            addLog(`DATABASE CLEARED: ${type.toUpperCase()}`, "text-yellow-500");
         }
 
-        document.querySelectorAll('.save-data').forEach(el => {
-            el.addEventListener('input', saveAllData);
-            el.addEventListener('change', saveAllData);
-        });
+        document.getElementById('f-smtp').onchange = e => handleCSV(e, 'smtp');
+        document.getElementById('f-target').onchange = e => handleCSV(e, 'target');
 
-        window.onload = loadAllData;
-
-        function toggleManualSmtp() { document.getElementById('manual-fields').classList.toggle('hidden', document.getElementById('smtp-type').value !== 'custom'); }
-        
-        document.getElementById('f-smtp').onchange = e => Papa.parse(e.target.files[0], { skipEmptyLines: true, complete: r => { 
-            smtps = r.data; document.getElementById('count-smtp').innerText = smtps.length;
-            addLog(`SMTP DATABASE LOADED: ${smtps.length}`, "text-blue-400 font-black"); 
-        }});
-
-        document.getElementById('f-target').onchange = e => Papa.parse(e.target.files[0], { skipEmptyLines: true, complete: r => { 
-            targets = r.data; document.getElementById('count-target').innerText = targets.length;
-            addLog(`TARGETS LOADED: ${targets.length}`, "text-green-400 font-black"); 
-        }});
+        function handleCSV(e, type) {
+            Papa.parse(e.target.files[0], { skipEmptyLines: true, complete: r => {
+                if(type === 'smtp') { smtps = [...smtps, ...r.data]; document.getElementById('count-smtp').innerText = smtps.length; }
+                else { targets = [...targets, ...r.data]; document.getElementById('count-target').innerText = targets.length; }
+                addLog(`STACKED: ${r.data.length} NEW RECORDS ADDED`, "text-blue-400");
+            }});
+        }
 
         function updatePreview() {
-            let h = document.getElementById('s-body').value;
-            h = h.replace(/drive\.google\.com\/uc\?export=view&id=([\w-]+)/g, 'lh3.googleusercontent.com/d/$1');
-            document.getElementById('p-frame').srcdoc = h;
+            let html = document.getElementById('s-body').value;
+            const plain = document.getElementById('plain-body').value;
+            const btnUrl = document.getElementById('btn-url').value;
+            
+            if(btnUrl) {
+                const btnHtml = `<div style="text-align:center;margin:20px 0;">
+                    <a href="${btnUrl}" style="background-color:${document.getElementById('btn-bg').value || '#3b82f6'}; 
+                    color:${document.getElementById('btn-color').value || '#ffffff'}; 
+                    padding:12px 25px; text-decoration:none; border-radius:5px; 
+                    font-family:${document.getElementById('btn-font').value}; font-weight:bold; display:inline-block;">
+                    ${document.getElementById('btn-text').value || 'Click Here'}</a></div>`;
+                html = html.replace('{{LINK_BUTTON}}', btnHtml) || (html + btnHtml);
+            }
+
+            document.getElementById('p-frame').srcdoc = `<div style="font-family:sans-serif">${plain ? `<p>${plain}</p><hr>` : ''}${html}</div>`;
             saveAllData();
         }
 
+        // --- ENGINE ---
         async function launch() {
-            if(!smtps.length || !targets.length) return alert("LOAD DATABASES FIRST");
+            if(!smtps.length || !targets.length) return alert("LOAD DATABASES");
             isRunning = true; toggleUI(true);
-            const baseDelay = parseInt(document.getElementById('send-delay').value) || 15000;
-
+            
             for(let i=0; i < targets.length; i++) {
                 if(!isRunning) break;
-                const sRow = smtps[i % smtps.length];
-                const type = document.getElementById('smtp-type').value;
-
-                // --- FINGERPRINT SCRAMBLER LOGIC ---
-                const salt = Math.random().toString(36).substring(2, 9);
-                const originalHtml = document.getElementById('s-body').value;
-                const uniqueHtml = originalHtml + `<div style="display:none; color:transparent; font-size:1px;">P7M-ID: ${salt}</div>`;
-
+                const salt = Math.random().toString(36).substring(7);
                 const payload = {
-                    smtpConfig: { user: sRow[0]?.trim(), pass: sRow[1]?.trim(), host: type === 'custom' ? document.getElementById('m-host').value : getHost(type), port: type === 'custom' ? document.getElementById('m-port').value : getPort(type) },
-                    proxyConfig: { host: document.getElementById('px-host').value, port: document.getElementById('px-port').value, user: document.getElementById('px-user').value, pass: document.getElementById('px-pass').value },
-                    customHeaders: { userAgent: document.getElementById('ua-string').value },
-                    mailData: { fromName: document.getElementById('s-name').value, to: targets[i][0], subject: document.getElementById('s-sub').value, html: uniqueHtml }
+                    smtpConfig: { user: smtps[i % smtps.length][0], pass: smtps[i % smtps.length][1], host: 'smtp.gmail.com', port: 465 },
+                    mailData: { to: targets[i][0], subject: document.getElementById('s-sub').value, html: document.getElementById('p-frame').srcdoc + `` }
                 };
 
                 try {
-                    const res = await fetch('/api/send', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
-                    const d = await res.json();
-                    if(d.success) { sent++; addLog(`SUCCESS -> ${targets[i][0]}`, "text-green-400"); } else { throw new Error(d.error); }
-                } catch(e) { fail++; addLog(`BLOCK -> ${targets[i][0]}`, "text-red-500", e.message); }
+                    const res = await fetch('/api/send', { method: 'POST', body: JSON.stringify(payload), headers: {'Content-Type':'application/json'} });
+                    if(res.ok) { sent++; } else { fail++; }
+                } catch { fail++; }
                 
                 updateStats();
-
-                // Randomize delay ± 10% to look human
-                const randomDelay = baseDelay + (Math.random() * (baseDelay * 0.2) - (baseDelay * 0.1));
-                await new Promise(r => setTimeout(r, randomDelay));
+                await new Promise(r => setTimeout(r, document.getElementById('send-delay').value));
             }
             isRunning = false; toggleUI(false);
         }
 
-        function getHost(t) { return { gmail: 'smtp.gmail.com', icloud: 'smtp.mail.me.com', gmx: 'mail.gmx.net', aws: 'email-smtp.us-east-1.amazonaws.com' }[t]; }
-        function getPort(t) { return (t==='gmail' || t==='aws') ? 465 : 587; }
+        function forceStop() { isRunning = false; sent = 0; fail = 0; updateStats(); addLog("SYSTEM KILLED & COUNTERS RESET", "text-red-500 font-black"); }
         function toggleUI(r) { document.getElementById('btn-start').classList.toggle('hidden', r); document.getElementById('btn-stop').classList.toggle('hidden', !r); }
         function updateStats() { document.getElementById('v-sent').innerText = sent; document.getElementById('v-fail').innerText = fail; }
-        function forceStop() { isRunning = false; addLog("SYSTEM KILLED", "text-red-500 font-black"); }
-
-        function addLog(msg, color, debug="") {
-            const log = document.getElementById('log');
-            const container = document.getElementById('log-container');
+        function addLog(msg, color) {
             const div = document.createElement('div');
-            div.className = "pb-2 border-b border-white/5";
-            div.innerHTML = `<div class="${color}">[${new Date().toLocaleTimeString()}] ${msg}</div>${debug ? `<div class="text-[8px] text-zinc-700 font-mono">${debug}</div>` : ''}`;
-            log.prepend(div);
-            container.scrollTop = 0;
+            div.className = color;
+            div.innerHTML = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            document.getElementById('log').prepend(div);
         }
+
+        function saveAllData() {
+            const data = {};
+            document.querySelectorAll('.save-data').forEach(el => data[el.id] = el.value);
+            localStorage.setItem('p7m_ultra_v3', JSON.stringify(data));
+        }
+
+        window.onload = () => {
+            const saved = localStorage.getItem('p7m_ultra_v3');
+            if(saved) {
+                const data = JSON.parse(saved);
+                Object.keys(data).forEach(k => { if(document.getElementById(k)) document.getElementById(k).value = data[k]; });
+                updatePreview();
+            }
+        };
     </script>
 </body>
 </html>
