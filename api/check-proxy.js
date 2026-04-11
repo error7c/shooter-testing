@@ -13,7 +13,7 @@ export default async function handler(req, res) {
 
         // 2. Real Blacklist Check (Querying a multi-RBL checker or reputation database)
         // For this implementation, we use a reputation score provider
-        const repCheck = await axios.get(`https://ipqualityscore.com/api/json/ip/YOUR_API_KEY/${ip}`, { timeout: 5000 });
+        const repCheck = await axios.get(`https://ipqualityscore.com/api/json/ip/5J2xtETPiWGyYrPxLsjoeECXmii2BPWE/${ip}`, { timeout: 5000 });
 
         res.status(200).json({
             success: true,
