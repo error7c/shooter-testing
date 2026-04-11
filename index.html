@@ -131,7 +131,7 @@
     <script>
         let smtps = [], targets = [], sent = 0, fail = 0, isRunning = false;
 
-        // --- REAL IP INTELLIGENCE (Boss, this matches your check-proxy.js) ---
+        // --- REAL IP INTELLIGENCE (Boss, Hostname & ASN Merged) ---
         async function checkRealIPReputation() {
             const display = document.getElementById('ip-details');
             const px = {
@@ -159,12 +159,14 @@
                     
                     display.innerHTML = `
                         <div class="text-blue-400 font-bold">IP: ${data.ip}</div>
+                        <div class="text-[9px] text-zinc-400 truncate">HOST: ${data.hostname || 'N/A'}</div>
+                        <div class="text-[9px] text-zinc-400">ASN: ${data.asn || 'N/A'}</div>
                         <div class="text-[9px]">LOC: ${data.city}, ${data.country}</div>
                         <div>ISP: ${data.isp}</div>
                         <div>GOOGLE REP: <span class="${statusColor}">${data.googleScore}</span></div>
                         <div>STATUS: <span class="${statusColor}">${data.blacklistStatus}</span></div>
                     `;
-                    addLog(`INTEL GATHERED: ${data.ip} [${data.country}]`, "text-green-400");
+                    addLog(`INTEL GATHERED: ${data.ip} [${data.asn || 'UNK'}]`, "text-green-400");
                 } else { 
                     throw new Error(data.error); 
                 }
